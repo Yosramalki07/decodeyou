@@ -1,142 +1,124 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>مؤقت التأمل</title>
-<style>
-  body, html {
-    height: 100%;
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: transparent;
-  }
-  .widget {
-    width: 320px;
-    height: 220px;
-    background: linear-gradient(135deg, #c9a9ff, #6a0dad);
-    border-radius: 15px;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    user-select: none;
-  }
-  .title {
-    font-size: 1.8rem;
-    margin-bottom: 12px;
-    font-weight: bold;
-  }
-  .timer {
-    font-size: 2.8rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    letter-spacing: 2px;
-    font-family: monospace;
-  }
-  .buttons {
-    display: flex;
-    gap: 15px;
-  }
-  button {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 1rem;
-    padding: 8px 18px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  button:hover {
-    background: rgba(255, 255, 255, 0.5);
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>مؤقت التأمل</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f5f5;
+      text-align: center;
+      padding: 50px;
+      direction: rtl;
+    }
+
+    h1 {
+      color: #6a0dad;
+      margin-bottom: 30px;
+    }
+
+    #countdown {
+      font-size: 64px;
+      margin: 40px 0;
+      color: #333;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background-color: #6a0dad;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #5a0099;
+    }
+
+    @media (max-width: 600px) {
+      #countdown {
+        font-size: 40px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="widget" role="region" aria-label="مؤقت التأمل">
-  <div class="title">مؤقت التأمل</div>
-  <div class="timer" id="timer">30:00</div>
+
+  <h1>مؤقت التأمل</h1>
+  <div id="countdown">30:00</div>
+
   <div class="buttons">
-    <button id="startPauseBtn">ابدأ</button>
-    <button id="restartBtn">إعادة</button>
+    <button onclick="startPauseTimer()">ابدأ / أوقف</button>
+    <button onclick="resetTimer()">إعادة البدء</button>
   </div>
-</div>
 
-<audio id="rainSound" loop>
-  <source src="https://cdn.pixabay.com/audio/2022/09/22/audio_69e39bc33e.mp3" type="audio/mpeg" />
-  متصفحك لا يدعم تشغيل الصوت.
-</audio>
+  <audio id="rainSound" loop>
+    <source src="https://www.fesliyanstudios.com/play-mp3/387" type="audio/mpeg">
+    متصفحك لا يدعم تشغيل الصوت.
+  </audio>
 
-<script>
-  const timerEl = document.getElementById('timer');
-  const startPauseBtn = document.getElementById('startPauseBtn');
-  const restartBtn = document.getElementById('restartBtn');
-  const rainSound = document.getElementById('rainSound');
+  <script>
+    let totalSeconds = 1800;
+    let timer;
+    let isRunning = false;
 
-  const DURATION = 30 * 60; // 30 minutes
-  let timeRemaining = DURATION;
-  let timerInterval = null;
-  let isRunning = false;
+    const countdownEl = document.getElementById('countdown');
+    const rainSound = document.getElementById('rainSound');
 
-  function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const secs = (seconds % 60).toString().padStart(2, '0');
-    return `${mins}:${secs}`;
-  }
+    function updateCountdown() {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      countdownEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      
+      if (totalSeconds > 0) {
+        totalSeconds--;
+      } else {
+        clearInterval(timer);
+        isRunning = false;
+        rainSound.pause();
+        rainSound.currentTime = 0;
+      }
+    }
 
-  function updateTimer() {
-    timerEl.textContent = formatTime(timeRemaining);
-  }
+    function startPauseTimer() {
+      if (!isRunning) {
+        timer = setInterval(updateCountdown, 1000);
+        isRunning = true;
+        rainSound.play();
+      } else {
+        clearInterval(timer);
+        isRunning = false;
+        rainSound.pause();
+      }
+    }
 
-  function tick() {
-    if (timeRemaining > 0) {
-      timeRemaining--;
-      updateTimer();
-    } else {
-      clearInterval(timerInterval);
+    function resetTimer() {
+      clearInterval(timer);
       isRunning = false;
-      startPauseBtn.textContent = "ابدأ";
+      totalSeconds = 1800;
+      updateCountdown();
       rainSound.pause();
       rainSound.currentTime = 0;
-      alert("انتهى الوقت!");
     }
-  }
 
-  startPauseBtn.addEventListener('click', () => {
-    if (!isRunning) {
-      // Start or resume timer
-      if (timeRemaining === 0) {
-        timeRemaining = DURATION;
-        updateTimer();
-      }
-      timerInterval = setInterval(tick, 1000);
-      rainSound.play();
-      isRunning = true;
-      startPauseBtn.textContent = "إيقاف";
-    } else {
-      // Pause timer
-      clearInterval(timerInterval);
-      rainSound.pause();
-      isRunning = false;
-      startPauseBtn.textContent = "ابدأ";
-    }
-  });
-
-  restartBtn.addEventListener('click', () => {
-    clearInterval(timerInterval);
-    timeRemaining = DURATION;
-    updateTimer();
-    rainSound.pause();
-    rainSound.currentTime = 0;
-    isRunning = false;
-    startPauseBtn.textContent = "ابدأ";
-  });
-
-  // Initialize
-  updateTimer();
-</script>
+    // Initialize with starting time
+    updateCountdown();
+  </script>
 </body>
 </html>
