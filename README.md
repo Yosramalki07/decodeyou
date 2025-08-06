@@ -1,124 +1,93 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>مؤقت التأمل</title>
+  <meta charset="UTF-8">
+  <title>مؤقت تأمل مع صوت المطر</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f5f5f5;
+      background: linear-gradient(to bottom right, #dbeafe, #f0f9ff);
+      font-family: 'Cairo', sans-serif;
       text-align: center;
-      padding: 50px;
-      direction: rtl;
+      padding: 40px;
+      color: #1e293b;
     }
-
     h1 {
-      color: #6a0dad;
-      margin-bottom: 30px;
+      font-size: 32px;
+      margin-bottom: 20px;
     }
-
-    #countdown {
-      font-size: 64px;
-      margin: 40px 0;
-      color: #333;
+    #timer {
+      font-size: 48px;
+      margin: 20px 0;
     }
-
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
     button {
-      background-color: #6a0dad;
+      background-color: #3b82f6;
       color: white;
       border: none;
-      padding: 15px 30px;
-      font-size: 18px;
+      padding: 12px 24px;
       border-radius: 12px;
+      font-size: 18px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      margin: 10px;
+      transition: 0.3s ease;
     }
-
     button:hover {
-      background-color: #5a0099;
+      background-color: #2563eb;
     }
-
-    @media (max-width: 600px) {
-      #countdown {
-        font-size: 40px;
-      }
-
-      button {
-        padding: 10px 20px;
-        font-size: 16px;
-      }
+    audio {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
+  <h1>مؤقت تأمل مع صوت المطر</h1>
+  <div id="timer">05:00</div>
+  <button onclick="startTimer()">ابدأ التأمل</button>
+  <button onclick="resetTimer()">إعادة ضبط</button>
 
-  <h1>مؤقت التأمل</h1>
-  <div id="countdown">30:00</div>
-
-  <div class="buttons">
-    <button onclick="startPauseTimer()">ابدأ / أوقف</button>
-    <button onclick="resetTimer()">إعادة البدء</button>
-  </div>
-
-  <audio id="rainSound" loop>
-    <source src="https://www.fesliyanstudios.com/play-mp3/387" type="audio/mpeg">
+  <!-- صوت المطر -->
+  <audio id="rainAudio" loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8048a1c51.mp3" type="audio/mpeg">
     متصفحك لا يدعم تشغيل الصوت.
   </audio>
 
   <script>
-    let totalSeconds = 1800;
-    let timer;
-    let isRunning = false;
+    let duration = 300; // 5 دقائق
+    let remaining = duration;
+    let timerInterval;
 
-    const countdownEl = document.getElementById('countdown');
-    const rainSound = document.getElementById('rainSound');
-
-    function updateCountdown() {
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      countdownEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      
-      if (totalSeconds > 0) {
-        totalSeconds--;
-      } else {
-        clearInterval(timer);
-        isRunning = false;
-        rainSound.pause();
-        rainSound.currentTime = 0;
-      }
+    function updateDisplay() {
+      const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
+      const seconds = (remaining % 60).toString().padStart(2, '0');
+      document.getElementById('timer').textContent = `${minutes}:${seconds}`;
     }
 
-    function startPauseTimer() {
-      if (!isRunning) {
-        timer = setInterval(updateCountdown, 1000);
-        isRunning = true;
-        rainSound.play();
-      } else {
-        clearInterval(timer);
-        isRunning = false;
-        rainSound.pause();
-      }
+    function startTimer() {
+      clearInterval(timerInterval);
+      const rainAudio = document.getElementById('rainAudio');
+      rainAudio.volume = 0.4;
+      rainAudio.play();
+      timerInterval = setInterval(() => {
+        remaining--;
+        updateDisplay();
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          rainAudio.pause();
+          rainAudio.currentTime = 0;
+          alert('انتهى وقت التأمل 🌧️');
+        }
+      }, 1000);
     }
 
     function resetTimer() {
-      clearInterval(timer);
-      isRunning = false;
-      totalSeconds = 1800;
-      updateCountdown();
-      rainSound.pause();
-      rainSound.currentTime = 0;
+      clearInterval(timerInterval);
+      remaining = duration;
+      updateDisplay();
+      const rainAudio = document.getElementById('rainAudio');
+      rainAudio.pause();
+      rainAudio.currentTime = 0;
     }
 
-    // Initialize with starting time
-    updateCountdown();
+    updateDisplay();
   </script>
 </body>
 </html>
